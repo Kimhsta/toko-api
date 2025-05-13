@@ -9,6 +9,14 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
+    private function formatResponse($data, $code = 200, $status = true)
+    {
+        return response()->json([
+            'code' => (int)$code,
+            'status' => $status ? true : false,
+            'data' => $data
+        ], $code);
+    }
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -18,10 +26,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'status' => false,
-                'errors' => $validator->errors()
-            ], 422);
+            return $this->formatResponse($validator->errors()->first(), 422, false);
         }
 
         $user = User::create([
@@ -30,11 +35,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->password)
         ]);
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Registrasi berhasil',
-            'user' => $user
-        ], 201);
+        return $this->formatResponse("Registrasi Berhasil", 200);
     }
     public function login(Request $request)
     {
@@ -48,19 +49,19 @@ class AuthController extends Controller
         $user = User::where('email', $credentials['email'])->first();
 
         if (!$user || !Hash::check($credentials['password'], $user->password)) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Email atau password salah.'
-            ], 401);
+            return $this->formatResponse('Email atau password salah.', 401, false);
         }
 
         // Jika pakai Sanctum untuk token:
-        // $token = $user->createToken('api-token')->plainTextToken;
+        $token = $user->createToken('api-token')->plainTextToken;
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Login berhasil',
-            // 'token' => $token
-        ]);
+        $data = [
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'email' => $user->email,
+            ]
+        ];
+        return $this->formatResponse($data, 200);
     }
 }

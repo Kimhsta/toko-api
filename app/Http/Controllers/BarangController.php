@@ -11,8 +11,8 @@ class BarangController extends Controller
     private function formatResponse($data, $code = 200, $status = true)
     {
         return response()->json([
-            'code' => (string)$code,
-            'status' => $status ? 'true' : 'false',
+            'code' => (int)$code,
+            'status' => $status ? true : false,
             'data' => $data
         ], $code);
     }
@@ -32,27 +32,33 @@ class BarangController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return $this->formatResponse($validator->errors()->all(), 422, false);
+            return $this->formatResponse($validator->errors()->first(), 422, false);
         }
 
         $barang = Barang::create($request->all());
-        return $this->formatResponse([$barang], 201);
+        return $this->formatResponse($barang, 201);
     }
 
     public function show($nobarcode)
     {
         $barang = Barang::find($nobarcode);
         if (!$barang) {
-            return $this->formatResponse(['Barang tidak ditemukan'], 404, false);
+            return $this->formatResponse('Barang tidak ditemukan', 404, false);
         }
-        return $this->formatResponse([$barang]);
+        $data = [
+            'nobarcode' => $barang->nobarcode,
+            'nama' => $barang->nama,
+            'stok' => $barang->stok,
+            'harga' => $barang->harga,
+        ];
+        return $this->formatResponse($data, 200);
     }
 
     public function update(Request $request, $nobarcode)
     {
         $barang = Barang::find($nobarcode);
         if (!$barang) {
-            return $this->formatResponse(['Barang tidak ditemukan'], 404, false);
+            return $this->formatResponse('Barang tidak ditemukan', 404, false);
         }
 
         $validator = Validator::make($request->all(), [
@@ -66,17 +72,23 @@ class BarangController extends Controller
         }
 
         $barang->update($request->all());
-        return $this->formatResponse([$barang]);
+        $data = [
+            'nobarcode' => $barang->nobarcode,
+            'nama' => $barang->nama,
+            'stok' => $barang->stok,
+            'harga' => $barang->harga,
+        ];
+        return $this->formatResponse($data, 200);
     }
 
     public function destroy($nobarcode)
     {
         $barang = Barang::find($nobarcode);
         if (!$barang) {
-            return $this->formatResponse(['Barang tidak ditemukan'], 404, false);
+            return $this->formatResponse('Barang tidak ditemukan', 404, false);
         }
 
         $barang->delete();
-        return $this->formatResponse(['Barang berhasil dihapus']);
+        return $this->formatResponse('Barang berhasil dihapus', 200);
     }
 }
