@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:frontend_flutter/bloc/logout_bloc.dart';
+import 'package:frontend_flutter/bloc/produk_bloc.dart';
 import 'package:frontend_flutter/model/produk.dart';
+import 'package:frontend_flutter/ui/login_page.dart';
 import 'package:frontend_flutter/ui/produk_detail.dart';
 import 'package:frontend_flutter/ui/produk_form.dart';
 
@@ -11,23 +14,32 @@ class ProdukPage extends StatefulWidget {
 }
 
 class _ProdukPageState extends State<ProdukPage> {
+  late Future<List<Produk>> _futureProduks;
+
+  @override
+  void initState() {
+    super.initState();
+    _futureProduks = ProdukBloc.getProduks();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('List Produk'),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 20.0),
-            child: GestureDetector(
-              child: const Icon(Icons.add, size: 26.0),
-              onTap: () async {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProdukForm()),
-                );
-              },
-            ),
+          IconButton(
+            icon: const Icon(Icons.add),
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ProdukForm()),
+              );
+              // Refresh after returning
+              setState(() {
+                _futureProduks = ProdukBloc.getProduks();
+              });
+            },
           ),
         ],
       ),
@@ -38,39 +50,37 @@ class _ProdukPageState extends State<ProdukPage> {
               title: const Text('Logout'),
               trailing: const Icon(Icons.logout),
               onTap: () async {
-                // Implementasi logout nanti
+                await LogoutBloc.logout();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                );
               },
             ),
           ],
         ),
       ),
-      body: ListView(
-        children: [
-          ItemProduk(
-            produk: Produk(
-              id: 1,
-              kodeProduk: 'A001',
-              namaProduk: 'Kamera',
-              hargaProduk: 5000000,
-            ),
-          ),
-          ItemProduk(
-            produk: Produk(
-              id: 2,
-              kodeProduk: 'A002',
-              namaProduk: 'Kulkas',
-              hargaProduk: 2500000,
-            ),
-          ),
-          ItemProduk(
-            produk: Produk(
-              id: 3,
-              kodeProduk: 'A003',
-              namaProduk: 'Mesin Cuci',
-              hargaProduk: 2000000,
-            ),
-          ),
-        ],
+      body: FutureBuilder<List<Produk>>(
+        future: _futureProduks,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text("Gagal memuat produk: ${snapshot.error}"),
+            );
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text("Tidak ada produk tersedia."));
+          }
+
+          final produks = snapshot.data!;
+          return ListView.builder(
+            itemCount: produks.length,
+            itemBuilder: (context, index) {
+              return ItemProduk(produk: produks[index]);
+            },
+          );
+        },
       ),
     );
   }
@@ -92,8 +102,8 @@ class ItemProduk extends StatelessWidget {
       },
       child: Card(
         child: ListTile(
-          title: Text(produk.namaProduk!),
-          subtitle: Text(produk.hargaProduk.toString()),
+          title: Text(produk.namaProduk ?? ''),
+          subtitle: Text("Rp ${produk.hargaProduk.toString()}"),
         ),
       ),
     );
