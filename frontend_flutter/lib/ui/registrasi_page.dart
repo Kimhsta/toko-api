@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend_flutter/bloc/registrasi_bloc.dart';
 import 'package:frontend_flutter/ui/login_page.dart';
+import 'package:frontend_flutter/widget/success_dialog.dart';
 import 'package:frontend_flutter/widget/warning_dialog.dart';
 
 class RegistrasiPage extends StatefulWidget {
@@ -209,10 +210,20 @@ class _RegistrasiPageState extends State<RegistrasiPage> {
           password: _passwordController.text,
         )
         .then((value) {
-          // langsung arahkan ke login setelah berhasil
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const LoginPage()),
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder:
+                (_) => SuccessDialog(
+                  description: "Registrasi berhasil, silakan login",
+                  okClick: () {
+                    Navigator.pop(context); // Tutup dialog
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginPage()),
+                    );
+                  },
+                ),
           );
         })
         .catchError((error) {

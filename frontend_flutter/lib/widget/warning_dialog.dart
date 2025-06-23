@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 
-/// Konstanta desain yang digunakan dalam dialog
 class Consts {
-  Consts._(); // Private constructor
+  Consts._();
 
   static const double padding = 16.0;
   static const double avatarRadius = 66.0;
 }
 
-/// Widget dialog peringatan/gagal yang reusable
 class WarningDialog extends StatelessWidget {
   final String? description;
   final VoidCallback? okClick;
@@ -18,59 +16,75 @@ class WarningDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 600;
+
     return Dialog(
+      insetPadding: EdgeInsets.symmetric(horizontal: isMobile ? 20 : 80),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(Consts.padding),
       ),
-      elevation: 0.0,
       backgroundColor: Colors.transparent,
       child: dialogContent(context),
     );
   }
 
-  /// Konten utama dialog
   Widget dialogContent(BuildContext context) {
     return Container(
+      constraints: const BoxConstraints(minHeight: 200),
       padding: const EdgeInsets.all(Consts.padding),
-      margin: const EdgeInsets.only(top: Consts.avatarRadius),
       decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.rectangle,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(Consts.padding),
         boxShadow: const [
           BoxShadow(
             color: Colors.black26,
-            blurRadius: 10.0,
-            offset: Offset(0.0, 10.0),
+            blurRadius: 20.0,
+            offset: Offset(0, 10),
           ),
         ],
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min, // Wrap content
+        mainAxisSize: MainAxisSize.min,
         children: [
+          Icon(Icons.warning_amber_rounded, color: Colors.red[600], size: 60),
+          const SizedBox(height: 16.0),
           const Text(
-            "GAGAL",
+            "Gagal",
             style: TextStyle(
-              fontSize: 24.0,
-              fontWeight: FontWeight.w700,
+              fontSize: 22.0,
+              fontWeight: FontWeight.bold,
               color: Colors.red,
             ),
           ),
-          const SizedBox(height: 16.0),
+          const SizedBox(height: 12.0),
           Text(
             description ?? '',
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16.0),
+            style: TextStyle(
+              fontSize: 16.0,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
+            ),
           ),
           const SizedBox(height: 24.0),
           Align(
             alignment: Alignment.bottomRight,
-            child: ElevatedButton(
+            child: TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
               onPressed: () {
-                Navigator.of(context).pop(); // Tutup dialog
-                if (okClick != null) okClick!(); // Panggil aksi jika ada
+                Navigator.of(context).pop();
+                if (okClick != null) okClick!();
               },
-              child: const Text("OK"),
+              child: const Text("OK", style: TextStyle(fontSize: 16)),
             ),
           ),
         ],
