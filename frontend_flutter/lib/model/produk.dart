@@ -6,12 +6,19 @@ class Produk {
 
   Produk({this.id, this.kodeProduk, this.namaProduk, this.hargaProduk});
 
-  factory Produk.fromJson(Map<String, dynamic> obj) {
+  factory Produk.fromJson(Map<String, dynamic> json) {
     return Produk(
-      id: obj['id'], // diperbaiki dari 'code' ke 'id'
-      kodeProduk: obj['kode_produk'],
-      namaProduk: obj['nama_produk'],
-      hargaProduk: obj['harga'],
+      id: json['id'],
+      kodeProduk: json['nobarcode'], // sesuaikan dengan nama di DB dan API
+      namaProduk: json['nama'],
+      hargaProduk: int.tryParse(json['harga'].toString().split('.')[0]),
     );
   }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'nobarcode': kodeProduk,
+    'nama': namaProduk,
+    'harga': hargaProduk,
+  };
 }

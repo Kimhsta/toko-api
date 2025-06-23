@@ -48,27 +48,33 @@ class _ProdukPageState extends State<ProdukPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('List Produk'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 20.0),
-            child: GestureDetector(
-              child: const Icon(Icons.add, size: 26.0),
-              onTap: _navigateToForm,
-            ),
-          ),
-        ],
+        title: const Text('Produk Xiaomi'),
+        backgroundColor: Colors.deepPurple,
       ),
       drawer: Drawer(
-        child: ListView(
+        child: Column(
           children: [
+            const UserAccountsDrawerHeader(
+              accountName: Text("Admin"),
+              accountEmail: Text("admin@tokokita.com"),
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Icon(Icons.person, size: 40, color: Colors.deepPurple),
+              ),
+              decoration: BoxDecoration(color: Colors.deepPurple),
+            ),
             ListTile(
+              leading: const Icon(Icons.logout),
               title: const Text('Logout'),
-              trailing: const Icon(Icons.logout),
               onTap: _logout,
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _navigateToForm,
+        backgroundColor: Colors.deepPurple,
+        child: const Icon(Icons.add),
       ),
       body: FutureBuilder<List<Produk>>(
         future: _futureProduk,
@@ -96,8 +102,10 @@ class ListProduk extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return ListView.separated(
       itemCount: list.length,
+      padding: const EdgeInsets.all(8),
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, i) => ItemProduk(produk: list[i]),
     );
   }
@@ -110,18 +118,32 @@ class ItemProduk extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ProdukDetail(produk: produk)),
-        );
-      },
-      child: Card(
-        child: ListTile(
-          title: Text(produk.namaProduk ?? ''),
-          subtitle: Text("Rp ${produk.hargaProduk.toString()}"),
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: CircleAvatar(
+          backgroundColor: Colors.deepPurple[100],
+          child: const Icon(Icons.phone_android, color: Colors.deepPurple),
         ),
+        title: Text(
+          produk.namaProduk ?? '',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          "Rp ${produk.hargaProduk}",
+          style: const TextStyle(color: Colors.black54),
+        ),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProdukDetail(produk: produk),
+            ),
+          );
+        },
       ),
     );
   }

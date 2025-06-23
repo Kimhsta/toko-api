@@ -7,18 +7,18 @@ class ApiUrl {
   static const String login = '$baseUrl/login';
 
   // Endpoint produk (meskipun tidak dipakai di tugas, tetap disiapkan)
-  static const String listProduk = '$baseUrl/produk';
-  static const String createProduk = '$baseUrl/produk';
+  static const String listProduk = '$baseUrl/barang';
+  static const String createProduk = '$baseUrl/barang';
 
   static String updateProduk(int id) {
-    return '$baseUrl/produk/$id/update';
+    return '$baseUrl/barang/$id/update';
   }
 
   static String showProduk(int id) {
-    return '$baseUrl/produk/$id';
+    return '$baseUrl/barang/$id';
   }
 
   static String deleteProduk(int id) {
-    return '$baseUrl/produk/$id';
+    return '$baseUrl/barang/$id';
   }
 }
