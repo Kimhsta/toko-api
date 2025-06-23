@@ -61,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 24),
                   _buttonLogin(),
                   const SizedBox(height: 16),
-                  _menuRegistrasi(),
+                  _menuRegistrasi(), // GANTI DENGAN VERSI MODERN
                 ],
               ),
             ),
@@ -162,17 +162,23 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Widget _menuRegistrasi() {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const RegistrasiPage()),
-        );
-      },
-      child: const Text(
-        "Belum punya akun? Registrasi",
-        style: TextStyle(color: Colors.blue),
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text("Belum punya akun? "),
+        InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const RegistrasiPage()),
+            );
+          },
+          child: const Text(
+            "Registrasi",
+            style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
     );
   }
 }
