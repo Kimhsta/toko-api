@@ -14,12 +14,34 @@ class ProdukPage extends StatefulWidget {
 }
 
 class _ProdukPageState extends State<ProdukPage> {
-  late Future<List<Produk>> _futureProduks;
+  late Future<List<Produk>> _futureProduk;
 
   @override
   void initState() {
     super.initState();
-    _futureProduks = ProdukBloc.getProduks();
+    _loadProduk();
+  }
+
+  void _loadProduk() {
+    _futureProduk = ProdukBloc.getProduks();
+  }
+
+  Future<void> _navigateToForm() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ProdukForm()),
+    );
+    setState(() {
+      _loadProduk();
+    });
+  }
+
+  void _logout() async {
+    await LogoutBloc.logout();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginPage()),
+    );
   }
 
   @override
@@ -28,18 +50,12 @@ class _ProdukPageState extends State<ProdukPage> {
       appBar: AppBar(
         title: const Text('List Produk'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () async {
-              await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const ProdukForm()),
-              );
-              // Refresh after returning
-              setState(() {
-                _futureProduks = ProdukBloc.getProduks();
-              });
-            },
+          Padding(
+            padding: const EdgeInsets.only(right: 20.0),
+            child: GestureDetector(
+              child: const Icon(Icons.add, size: 26.0),
+              onTap: _navigateToForm,
+            ),
           ),
         ],
       ),
@@ -49,39 +65,40 @@ class _ProdukPageState extends State<ProdukPage> {
             ListTile(
               title: const Text('Logout'),
               trailing: const Icon(Icons.logout),
-              onTap: () async {
-                await LogoutBloc.logout();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginPage()),
-                );
-              },
+              onTap: _logout,
             ),
           ],
         ),
       ),
       body: FutureBuilder<List<Produk>>(
-        future: _futureProduks,
+        future: _futureProduk,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(
-              child: Text("Gagal memuat produk: ${snapshot.error}"),
-            );
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("Tidak ada produk tersedia."));
           }
-
-          final produks = snapshot.data!;
-          return ListView.builder(
-            itemCount: produks.length,
-            itemBuilder: (context, index) {
-              return ItemProduk(produk: produks[index]);
-            },
-          );
+          if (snapshot.hasError) {
+            return Center(child: Text("Terjadi kesalahan: ${snapshot.error}"));
+          }
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return const Center(child: Text("Produk tidak tersedia."));
+          }
+          return ListProduk(list: snapshot.data!);
         },
       ),
+    );
+  }
+}
+
+class ListProduk extends StatelessWidget {
+  final List<Produk> list;
+
+  const ListProduk({Key? key, required this.list}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      itemCount: list.length,
+      itemBuilder: (context, i) => ItemProduk(produk: list[i]),
     );
   }
 }
