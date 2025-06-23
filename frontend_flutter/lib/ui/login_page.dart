@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:frontend_flutter/bloc/login_bloc.dart';
+import 'package:frontend_flutter/helpers/user_info.dart';
+import 'package:frontend_flutter/ui/produk_page.dart';
 import 'package:frontend_flutter/ui/registrasi_page.dart';
+import 'package:frontend_flutter/widget/warning_dialog.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -20,15 +24,14 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('Login')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(8.0),
         child: Form(
           key: _formKey,
           child: Column(
             children: [
               _emailTextField(),
-              const SizedBox(height: 16),
               _passwordTextField(),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
               _buttonLogin(),
               const SizedBox(height: 30),
               _menuRegistrasi(),
@@ -39,6 +42,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  // TextField untuk email
   Widget _emailTextField() {
     return TextFormField(
       decoration: const InputDecoration(labelText: "Email"),
@@ -53,10 +57,10 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  // TextField untuk password
   Widget _passwordTextField() {
     return TextFormField(
       decoration: const InputDecoration(labelText: "Password"),
-      keyboardType: TextInputType.text,
       obscureText: true,
       controller: _passwordTextboxController,
       validator: (value) {
@@ -68,37 +72,63 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  // Tombol login
   Widget _buttonLogin() {
-    return ElevatedButton(
-      onPressed: () {
-        final isValid = _formKey.currentState!.validate();
-        if (isValid && !_isLoading) {
-          // Jalankan proses login di sini
-          // Contoh: _submitLogin();
-        }
-      },
-      child:
-          _isLoading
-              ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-              : const Text("Login"),
-    );
+    return _isLoading
+        ? const CircularProgressIndicator()
+        : ElevatedButton(
+          onPressed: () {
+            final isValid = _formKey.currentState!.validate();
+            if (isValid && !_isLoading) {
+              _submit();
+            }
+          },
+          child: const Text("Login"),
+        );
   }
 
-  Widget _menuRegistrasi() {
-    return Center(
-      child: InkWell(
-        child: const Text("Registrasi", style: TextStyle(color: Colors.blue)),
-        onTap: () {
-          Navigator.push(
+  // Fungsi login
+  void _submit() {
+    _formKey.currentState!.save();
+    setState(() => _isLoading = true);
+
+    LoginBloc.login(
+          email: _emailTextboxController.text,
+          password: _passwordTextboxController.text,
+        )
+        .then((value) async {
+          await UserInfo().setToken(value.token.toString());
+          await UserInfo().setUserID(int.parse(value.userID.toString()));
+          Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const RegistrasiPage()),
+            MaterialPageRoute(builder: (context) => const ProdukPage()),
           );
-        },
-      ),
+        })
+        .catchError((error) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder:
+                (context) => const WarningDialog(
+                  description: "Login gagal, silahkan coba lagi",
+                ),
+          );
+        })
+        .whenComplete(() {
+          setState(() => _isLoading = false);
+        });
+  }
+
+  // Link ke halaman registrasi
+  Widget _menuRegistrasi() {
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const RegistrasiPage()),
+        );
+      },
+      child: const Text("Registrasi", style: TextStyle(color: Colors.blue)),
     );
   }
 }
